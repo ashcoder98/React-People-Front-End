@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
-import { Route, Switch } from "react-router-dom";
+import { Route, Switch, Redirect } from "react-router-dom";
 import Index from "../pages/Index";
 import Show from "../pages/Show";
 
 function Main(props) {
-  const [ people, setPeople ] = useState(null);
+  const [ people, setPeople ] = useState([]);
 
   const URL = "http://localhost:3001/people/";
 
@@ -26,7 +26,18 @@ function Main(props) {
     // update list of people
     getPeople();
   };
-
+const updatePeople = async (person, id) => {
+   await fetch(URL + id, {
+     method: "PUT",
+     headers: {'Content-type': 'Application/json'},
+     body: JSON.stringify(person)
+   });
+   getPeople();
+}
+const deletePeople = async (id) => {
+  await fetch(URL + id, {method: 'DELETE'});
+  getPeople();
+}
 
  // make sure we get people when the application loads
     // in other words, we need a side effect to occur as a result of the page loading
@@ -42,9 +53,15 @@ function Main(props) {
         <Route
           path="/people/:id"
           render={(rp) => (
+            people.length ?
             <Show
               {...rp}
+              people={people}
+              updatePeople={updatePeople}
+              deletePeople={deletePeople}
             />
+            :
+            <Redirect to="/" />
           )}
         />
       </Switch>
